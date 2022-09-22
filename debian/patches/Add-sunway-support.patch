@@ -1,0 +1,47 @@
+Description: <Add sunway support>
+Author: Miao Changwei <miaochangwei@uniontech.com>
+
+---
+Last-Update: 2022-04-19
+
+--- libaio-0.3.112.orig/harness/cases/16.t
++++ libaio-0.3.112/harness/cases/16.t
+@@ -18,6 +18,8 @@
+ #define SYS_eventfd 318
+ #elif defined(__alpha__)
+ #define SYS_eventfd 478
++#elif defined(__sw_64__)
++#define SYS_eventfd 478
+ #elif defined(__aarch64__) || defined(__riscv)
+ /* arm64 and riscv do not implement eventfd, only eventfd2 */
+ #define USE_EVENTFD2
+--- libaio-0.3.112.orig/src/libaio.h
++++ libaio-0.3.112/src/libaio.h
+@@ -68,7 +68,7 @@ typedef enum io_iocb_cmd {
+ #elif defined(__ia64__) || defined(__x86_64__) || defined(__alpha__) || \
+       (defined(__mips64) && defined(__MIPSEL__)) || \
+       (defined(__aarch64__) && defined(__AARCH64EL__)) || \
+-      (defined(__riscv) && __riscv_xlen == 64) || \
++      (defined(__riscv) && __riscv_xlen == 64) || defined(__sw_64__) || \
+       (defined(__GNUC__) && defined(__BYTE_ORDER__) && \
+           __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ && __SIZEOF_LONG__ == 8)
+ #define PADDED(x, y)	x, y
+--- /dev/null
++++ libaio-0.3.112/src/syscall-sw_64.h
+@@ -0,0 +1,5 @@
++#define __NR_io_setup		398
++#define __NR_io_destroy		399
++#define __NR_io_getevents	400
++#define __NR_io_submit		401
++#define __NR_io_cancel		402
+--- libaio-0.3.112.orig/src/syscall.h
++++ libaio-0.3.112/src/syscall.h
+@@ -48,6 +48,8 @@
+ #include "syscall-mips.h"
+ #elif defined(__sh__)
+ #include "syscall-sh.h"
++#elif defined(__sw_64__)
++#include "syscall-sw_64.h"
+ #elif defined(__aarch64__) || defined(__riscv)
+ #include "syscall-generic.h"
+ #else
