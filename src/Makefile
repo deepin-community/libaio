@@ -3,7 +3,7 @@ includedir=$(prefix)/include
 libdir=$(prefix)/lib
 
 CFLAGS ?= -g -fomit-frame-pointer -O2
-CFLAGS += -nostdlib -nostartfiles -Wall -I. -fPIC
+CFLAGS += -Wall -I. -fPIC
 SO_CFLAGS=-shared $(CFLAGS)
 L_CFLAGS=$(CFLAGS)
 LINK_FLAGS=
@@ -12,7 +12,7 @@ ENABLE_SHARED ?= 1
 
 soname=libaio.so.1
 minor=0
-micro=1
+micro=2
 libname=$(soname).$(minor).$(micro)
 all_targets += libaio.a
 
@@ -55,6 +55,7 @@ libaio.a: $(libaio_objs)
 	$(RANLIB) libaio.a
 
 $(libname): $(libaio_sobjs) libaio.map
+	$(CC) $(CFLAGS) -c struct_offsets.c
 	$(CC) $(SO_CFLAGS) -Wl,--version-script=libaio.map -Wl,-soname=$(soname) -o $@ $(libaio_sobjs) $(LINK_FLAGS)
 
 install: $(all_targets)

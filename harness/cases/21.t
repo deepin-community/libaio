@@ -43,7 +43,7 @@ open_temp_file()
 	int fd;
 	char temp_file[sizeof(TEMPLATE)];
 
-	strncpy(temp_file, TEMPLATE, sizeof(TEMPLATE));
+	strncpy(temp_file, TEMPLATE, sizeof(temp_file));
 	fd = mkstemp(temp_file);
 	if (fd < 0) {
 		perror("mkstemp");
@@ -92,7 +92,10 @@ test_main()
 	 */
 	flags = fcntl(fd, F_GETFL);
 	ret = fcntl(fd, F_SETFL, flags | O_DIRECT);
-	if (ret != 0) {
+	if (ret < 0) {
+		/* SKIP this test if O_DIRECT is not available on this fs */
+		if (errno == EINVAL)
+			return 3;
 		perror("fcntl");
 		return 1;
 	}
@@ -105,13 +108,15 @@ test_main()
 	ret = io_submit(ctx, 1, &iocbp);
 
 	/*
-	 * io_submit will return -EINVAL if RWF_NOWAIT is not supported.
+	 * io_submit will return -EINVAL if RWF_NOWAIT is not supported by
+	 * the kernel, and EOPNOTSUPP if it's not supported by the fs.
 	 */
 	if (ret != 1) {
-		if (ret == -EINVAL) {
-			fprintf(stderr, "RWF_NOWAIT not supported by kernel.\n");
-			/* just return success */
-			return 0;
+		if (ret == -EINVAL || ret == -ENOTSUP) {
+			fprintf(stderr, "RWF_NOWAIT not supported by %s.\n",
+				ret == -EINVAL ? "kernel" : "file system");
+			/* skip this test */
+			return 3;
 		}
 		errno = -ret;
 		perror("io_submit");

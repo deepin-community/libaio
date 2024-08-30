@@ -3,8 +3,8 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-DEB_BUILD_MAINT_OPTIONS = hardening=+bindnow
-DEB_CFLAGS_MAINT_PREPEND = -Wall
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all abi=+lfs
+export DEB_CFLAGS_MAINT_PREPEND = -Wall
 
 include /usr/share/dpkg/default.mk
 include /usr/share/dpkg/buildtools.mk
@@ -14,18 +14,12 @@ include /usr/share/dpkg/buildtools.mk
 #     (emulated, no proper test results)
 #   sh4
 #     (emulated, no proper test results)
-#   x32
-#     (20: io_setup failed)
-#   riscv64
-#     (5: 512 instead of EFAULT on write)
 #   sparc64
-#     (5: 512 instead of EFAULT on write)
 #     (19: mremap EINVAL)
 #   hppa
-#     (5: 512 instead of EFAULT on write)
 #     (19: mremap EINVAL)
 #     (17: looping, timeout?)
-ifneq (,$(filter $(DEB_HOST_ARCH),m68k sh4 x32 riscv64 sparc64 hppa))
+ifneq (,$(filter $(DEB_HOST_ARCH),m68k sh4 sparc64 hppa))
   TESTS_FLAKY = yes
 endif
 
@@ -46,3 +40,12 @@ endif
 override_dh_auto_install:
 	dh_auto_install -- \
 	  libdir=/usr/lib/$(DEB_HOST_MULTIARCH)
+
+override_dh_installchangelogs:
+	dh_installchangelogs --no-trim
+
+override_dh_makeshlibs:
+	# XXX: Ideally we'd also rename the udeb, but d-i does not really
+	# care about file conflicts, and that would take us through NEW
+	# in the middle of the time64 transition.
+	dh_makeshlibs --add-udeb=libaio1-udeb

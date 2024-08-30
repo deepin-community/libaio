@@ -53,7 +53,8 @@ typedef enum io_iocb_cmd {
 /* little endian, 32 bits */
 #if defined(__i386__) || (defined(__arm__) && !defined(__ARMEB__)) || \
     defined(__sh__) || defined(__bfin__) || defined(__MIPSEL__) || \
-    defined(__cris__) || (defined(__riscv) && __riscv_xlen == 32) || \
+    defined(__cris__) || defined(__loongarch32) || \
+    (defined(__riscv) && __riscv_xlen == 32) || \
     (defined(__GNUC__) && defined(__BYTE_ORDER__) && \
          __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ && __SIZEOF_LONG__ == 4)
 #define PADDED(x, y)	x; unsigned y
@@ -63,6 +64,7 @@ typedef enum io_iocb_cmd {
 /* little endian, 64 bits */
 #elif defined(__ia64__) || defined(__x86_64__) || defined(__alpha__) || \
       (defined(__aarch64__) && defined(__AARCH64EL__)) || \
+      defined(__loongarch64) || \
       (defined(__riscv) && __riscv_xlen == 64) || \
       (defined(__GNUC__) && defined(__BYTE_ORDER__) && \
           __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ && __SIZEOF_LONG__ == 8)
@@ -100,8 +102,8 @@ struct io_iocb_poll {
 };	/* result code is the set of result flags or -'ve errno */
 
 struct io_iocb_sockaddr {
-	struct sockaddr *addr;
-	int		len;
+	PADDEDptr(struct sockaddr *addr, __pad1);
+	PADDEDul(len, __pad2);
 };	/* result code is the length of the sockaddr, or -'ve errno */
 
 struct io_iocb_common {
@@ -114,8 +116,8 @@ struct io_iocb_common {
 };	/* result code is the amount read or -'ve errno */
 
 struct io_iocb_vector {
-	const struct iovec	*vec;
-	int			nr;
+	PADDEDptr(const struct iovec *vec, __pad1);
+	PADDEDul(nr, __pad2);
 	long long		offset;
 };	/* result code is the amount read or -'ve errno */
 
@@ -162,8 +164,8 @@ extern int io_setup(int maxevents, io_context_t *ctxp);
 extern int io_destroy(io_context_t ctx);
 extern int io_submit(io_context_t ctx, long nr, struct iocb *ios[]);
 extern int io_cancel(io_context_t ctx, struct iocb *iocb, struct io_event *evt);
-extern int io_getevents(io_context_t ctx_id, long min_nr, long nr, struct io_event *events, struct timespec *timeout);
-extern int io_pgetevents(io_context_t ctx_id, long min_nr, long nr,
+extern int io_getevents(io_context_t ctx, long min_nr, long nr, struct io_event *events, struct timespec *timeout);
+extern int io_pgetevents(io_context_t ctx, long min_nr, long nr,
 		struct io_event *events, struct timespec *timeout,
 		sigset_t *sigmask);
 

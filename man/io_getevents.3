@@ -1,22 +1,22 @@
-./"/* io_getevents:
-./" *      Attempts to read at least min_nr events and up to nr events from
-./" *      the completion queue for the aio_context specified by ctx_id.  May
-./" *      fail with -EINVAL if ctx_id is invalid, if min_nr is out of range,
-./" *      if nr is out of range, if when is out of range.  May fail with
-./" *      -EFAULT if any of the memory specified to is invalid.  May return
-./" *      0 or < min_nr if no events are available and the timeout specified
-./" *      by when has elapsed, where when == NULL specifies an infinite
-./" *      timeout.  Note that the timeout pointed to by when is relative and
-./" *      will be updated if not NULL and the operation blocks.  Will fail
-./" *      with -ENOSYS if not implemented.
-./" */
-./"asmlinkage long sys_io_getevents(io_context_t ctx_id,
-./"                                 long min_nr,
-./"                                 long nr,
-./"                                 struct io_event *events,
-./"                                 struct timespec *timeout)
-./"
-.TH io_getevents 2 2002-09-03 "Linux 2.4" "Linux AIO"
+.\"/* io_getevents:
+.\" *      Attempts to read at least min_nr events and up to nr events from
+.\" *      the completion queue for the aio_context specified by ctx.  May
+.\" *      fail with -EINVAL if ctx is invalid, if min_nr is out of range,
+.\" *      if nr is out of range, if when is out of range.  May fail with
+.\" *      -EFAULT if any of the memory specified to is invalid.  May return
+.\" *      0 or < min_nr if no events are available and the timeout specified
+.\" *      by when has elapsed, where when == NULL specifies an infinite
+.\" *      timeout.  Note that the timeout pointed to by when is relative and
+.\" *      will be updated if not NULL and the operation blocks.  Will fail
+.\" *      with -ENOSYS if not implemented.
+.\" */
+.\"asmlinkage long sys_io_getevents(io_context_t ctx,
+.\"                                 long min_nr,
+.\"                                 long nr,
+.\"                                 struct io_event *events,
+.\"                                 struct timespec *timeout)
+.\"
+.TH io_getevents 3 2019-07-23 "Linux" "Linux AIO"
 .SH NAME
 io_getevents, aio_pgetevents \- Read resulting events from io requests
 .SH SYNOPSIS
@@ -42,19 +42,25 @@ struct io_event {
         unsigned        PADDED(res2, __pad4);
 };
 .sp
-.BI "int io_getevents(io_context_t " ctx ",  long " nr ", struct io_event *" events "[], struct timespec *" timeout ");"
-.BI "int io_pgetevents(io_context_t " ctx ",  long " nr ", struct io_event *" events "[], struct timespec *" timeout ", sigset_t *" sigmask ");"
+.BI "int io_getevents(io_context_t " ctx ", long " nr ", struct io_event *" events "[], struct timespec *" timeout ");"
+.BI "int io_pgetevents(io_context_t " ctx ", long " nr ", struct io_event *" events "[], struct timespec *" timeout ", sigset_t *" sigmask ");"
 .fi
 .SH DESCRIPTION
-Attempts to read  up to nr events from
-the completion queue for the aio_context specified by ctx.  
+Attempts to read up to
+.I nr
+events from the completion queue for the aio_context specified by
+.IR ctx .
 .SH "RETURN VALUES"
 May return
-0 if no events are available and the timeout specified
-by when has elapsed, where when == NULL specifies an infinite
+.B 0
+if no events are available and the timeout specified
+by when has elapsed, where
+.I when
+== NULL specifies an infinite
 timeout.  Note that the timeout pointed to by when is relative and
-will be updated if not NULL and the operation blocks.  Will fail
-with ENOSYS if not implemented.
+will be updated if not NULL and the operation blocks.  Will fail with
+.B ENOSYS
+if not implemented.
 .SS io_pgetevents()
 The relationship between
 .BR io_getevents ()
@@ -64,15 +70,14 @@ is analogous to the relationship between
 .BR select (2)
 and
 .BR pselect (2):
-similar
+similar to
 .BR pselect (2),
 .BR pgetevents ()
 allows an application to safely wait until either an aio completion
-events happens or until a signal is caught.
+event happens or until a signal is caught.
 .PP
 The following
 .BR io_pgetevents ()
-call:
 call:
 .PP
 .in +4n
@@ -107,28 +112,34 @@ argument is specified as NULL, then no signal mask manipulation is
 performed (and thus
 .BR io_pgetevents ()
 behaves the same as
-.BR io_getevents()
-) .
+.BR io_getevents() ).
 .SH ERRORS
 .TP
 .B EINVAL 
-if ctx_id is invalid, if min_nr is out of range,
-if nr is out of range, if when is out of range.  
+If
+.I ctx
+is invalid, if
+.I min_nr
+is out of range, if
+.I nr
+is out of range, if
+.I when
+is out of range.
 .TP
 .B EFAULT 
-if any of the memory specified to is invalid.  
+If any of the memory specified to is invalid.
 .SH "SEE ALSO"
-.BR io(3),
-.BR io_cancel(3),
-.BR io_fsync(3),
-.BR io_prep_fsync(3),
-.BR io_prep_pread(3),
-.BR io_prep_pwrite(3),
-.BR io_queue_init(3),
-.BR io_queue_release(3),
-.BR io_queue_run(3),
-.BR io_queue_wait(3),
-.BR io_set_callback(3),
-.BR io_submit(3),
-.BR errno(3),
-.BR pselect(2)
+.BR io (3),
+.BR io_cancel (3),
+.BR io_fsync (3),
+.BR io_prep_fsync (3),
+.BR io_prep_pread (3),
+.BR io_prep_pwrite (3),
+.BR io_queue_init (3),
+.BR io_queue_release (3),
+.BR io_queue_run (3),
+.BR io_queue_wait (3),
+.BR io_set_callback (3),
+.BR io_submit (3),
+.BR errno (3),
+.BR pselect (2).
