@@ -6,13 +6,22 @@ PROGS:=$(PARTPROGS) $(EXTRAPROGS)
 HARNESS_SRCS:=main.c
 # io_queue.c
 
-CFLAGS+=-Wall -Werror -I../src -g -O2 -DPAGE_SIZE=$(shell getconf PAGESIZE)
+CFLAGS+=-Wall -Werror -I../src -g -O2
 #-lpthread -lrt
+
+# gcc-11 does not like the test case in 3.t that
+# passes an invalid pointer (-1) to the kernel, so
+# tell the compiler we do not need a warning here
+cases/3.p:	CFLAGS+=-Wno-stringop-overflow
+
+# Change this on the build line to run tests against the installed libraries:
+# make LIBAIO=-laio partcheck
+LIBAIO?=../src/libaio.a
 
 all: $(PROGS)
 
 $(PROGS): %.p: %.t $(HARNESS_SRCS)
-	$(CC) $(CFLAGS) -DTEST_NAME=\"$<\" -o $@ main.c ../src/libaio.a -lpthread
+	$(CC) $(CFLAGS) -DTEST_NAME=\"$<\" -o $@ main.c $(LIBAIO) -lpthread
 
 clean:
 	rm -f $(PROGS) *.o runtests.out rofile wofile rwfile

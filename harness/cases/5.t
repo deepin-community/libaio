@@ -40,13 +40,12 @@ int test_main(void)
 	buf = mmap(0, page_size, PROT_WRITE, MAP_SHARED, rwfd, 0);
 	assert(buf != (char *)-1);
 
-	status |= attempt_rw(rwfd, buf, SIZE,  0,  READ, SIZE);
-
 	/* Whether PROT_WRITE is readable is arch-dependent.  So compare
-	 * against read result. */
-	res = read(rwfd, buf, SIZE);
+	 * against write() result (to make the kernel read from buf). */
+	res = write(rwfd, buf, SIZE);
 	if (res < 0)
 		res = -errno;
+	status |= attempt_rw(rwfd, buf, SIZE,  0,  READ, SIZE);
 	status |= attempt_rw(rwfd, buf, SIZE,  0, WRITE, res);
 
 	return status;

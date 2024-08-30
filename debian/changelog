@@ -1,14 +1,104 @@
-libaio (0.3.112.1-1+dde) UNRELEASED; urgency=medium
+libaio (0.3.113-8) unstable; urgency=medium
 
-  * update
+  * Add a backwards compatibility symlink for the libaio.so.1 SONAME in the
+    udeb, as the SONAME bump we did was ABI compatible, but just done to
+    avoid stomping over upstream interface, where this is not a concern
+    for the d-i system. (Closes: #1067831)
 
- -- Guillem Jover <guillem@debian.org>  Thu, 26 May 2022 10:48:30 +0800
+ -- Guillem Jover <guillem@debian.org>  Thu, 28 Mar 2024 01:01:37 +0100
 
-libaio (0.3.112.1-1+dde) unstable; urgency=medium
+libaio (0.3.113-7) unstable; urgency=medium
 
-  * Add sunway support.
+  * Do not mark test suite as flaky on riscv64 and x32, these ports now work
+    as expected.
+  * Hardcode list of ports that cannot check for a readable PROT_WRITE, and
+    instead expect the return value to be SIZE. This includes hppa, sparc
+    and loong64.
 
- -- Miao Changwei <miaochangwei@uniontech.com>  Tue, 19 Apr 2022 10:01:53 +0800
+ -- Guillem Jover <guillem@debian.org>  Wed, 06 Mar 2024 13:20:49 +0100
+
+libaio (0.3.113-6) unstable; urgency=medium
+
+  * Switch from future=+lfs to abi=+lfs build flags feature, and Build-Depends
+    on dpkg-dev >= 1.22.0.
+  * Add time64 support:
+    - Remove dead code for syscall handling.
+    - Refactor code to use an internal implementation for public functions
+      that handle timespec, by switching them to always use __kernel_timespec,
+      and add conversion functions to map from 'struct timespec' to
+      'struct __kernel_timespec', and from 'struct __kernel_timespec' to
+      'struct __kernel_old_timespec'.
+    - Add support for io_pgetevents_time64() Linux syscall, but disable it
+      for now as it only works on 32-bit kernels, but not on the compat
+      mode in 64-bit kernels running 32-bit userland, will be fixed in Linux
+      in parallel, as the timeouts used are supposed to be relative anyway,
+      and this does not and will not break ABI.
+    - Add dual time32/time64 ABI support by adding io_getevents_time64() and
+      io_pgetevents_time64() library functions on 32-bit architectures, that
+      get redirected from the io_getevents() and io_pgetevents() functions
+      when the user sets _TIME_BITS=64.
+    - Perform a SONAME bump to avoid stomping on upstream SONAME. Once and if
+      the new symbols are accepted by upstream then we can merge that back
+      into libaio.so.1 and drop the t64 packages and temporarily provide
+      a compat symlink for the t64 SONAME for a smooth transition back. This
+      should also be an easier way to revert this transition when there are
+      no file conflicts involved, and does not block on upstream support.
+    - Do not rename the udeb from libaio1-udeb, as d-i does not care, and
+      that would require a pointless trip through NEW. But update the shlibs
+      references for the libaio1t64 rename.
+    - We do not need a dependency on a newer dpkg-dev nor gcc as we are
+      explicitly handling the time64 dual-ABI independently of the toolchain.
+    Closes: #1062218
+
+ -- Guillem Jover <guillem@debian.org>  Tue, 05 Mar 2024 11:33:54 +0100
+
+libaio (0.3.113-5) unstable; urgency=medium
+
+  * Wrap fields in debian/tests/control.
+  * Fix upstream build system to remove all test artifacts on clean.
+    Reported by Lucas Nussbaum <lucas@debian.org>.
+
+ -- Guillem Jover <guillem@debian.org>  Sun, 06 Aug 2023 21:12:34 +0200
+
+libaio (0.3.113-4) unstable; urgency=medium
+
+  * Switch to Standards-Version 4.6.2 (no changes needed).
+  * Do not trim debian/changelog.
+  * Update debian/patches metadata.
+
+ -- Guillem Jover <guillem@debian.org>  Wed, 18 Jan 2023 01:35:12 +0100
+
+libaio (0.3.113-3) unstable; urgency=medium
+
+  * Add upstream/metadata fields for bug submitting and database.
+  * Update lintian overrides.
+  * Switch to Standards-Version 4.6.1 (no changes needed).
+  * Move debian/copyright Source field immediately after Format field.
+  * Export DEB_BUILD_MAINT_OPTIONS and DEB_CFLAGS_MAINT_PREPEND.
+  * Switch from hardening=+bindnow to hardening=+all.
+  * Enable future=+lfs build feature as it does not affect the shared library
+    ABI, but affects the test harness.
+
+ -- Guillem Jover <guillem@debian.org>  Sun, 04 Dec 2022 18:06:09 +0100
+
+libaio (0.3.113-2) unstable; urgency=medium
+
+  * Skip new test case 23, which was added upstream for a kernel regression,
+    so we are not worse off than before. Its failure was known and being
+    looked at upstream.
+
+ -- Guillem Jover <guillem@debian.org>  Tue, 19 Apr 2022 15:57:07 +0200
+
+libaio (0.3.113-1) unstable; urgency=medium
+
+  * New upstream release.
+    - Remove patches taken from upstream, now unneeded.
+    - Remove -Werror removal patch, as we override CFLAGS.
+    - Refresh patches.
+    - Update copyright years.
+  * Add support for the noudeb build profile.
+
+ -- Guillem Jover <guillem@debian.org>  Tue, 19 Apr 2022 03:22:49 +0200
 
 libaio (0.3.112-13) unstable; urgency=medium
 

@@ -76,14 +76,17 @@ int test_main(void)
 
 		ret = io_setup(1, &ctx);
 		if (ret) {
-			printf("child: io_setup failed\n");
+			printf("child: io_setup failed: %s\n", strerror(-ret));
 			return 1;
 		}
 
 		io_prep_poll(&iocb, pipe1[0], POLLIN);
 		ret = io_submit(ctx, 1, iocbs);
 		if (ret != 1) {
-			printf("child: io_submit failed\n");
+			/* if poll isn't supported, skip the test */
+			if (ret == -EINVAL)
+				return 3;
+			printf("child: io_submit failed: %s\n", strerror(-ret));
 			return 1;
 		}
 
@@ -95,8 +98,13 @@ int test_main(void)
 			ret = io_pgetevents(ctx, 1, 1, &ev, &to, &sigmask);
 		} while (ret == 0);
 
+		/* SKIP if the syscall has not been implemented. */
+		if (ret == -ENOSYS)
+			return 3;
+
 		if (ret != -EINTR) {
-			printf("child: io_pgetevents did not set errno to EINTR\n");
+			printf("child: io_pgetevents did not set errno to "
+			       "EINTR: %s\n", strerror(-ret));
 			return 1;
 		}
 
@@ -114,21 +122,29 @@ int test_main(void)
 
 		ret = io_setup(1, &ctx);
 		if (ret) {
-			printf("parent: io_setup failed\n");
+			printf("parent: io_setup failed: %s\n", strerror(-ret));
 			return 1;
 		}
 
 		ret = io_submit(ctx, 1, iocbs);
 		if (ret != 1) {
-			printf("parent: io_submit failed\n");
+			/* if poll isn't supported, skip the test */
+			if (ret == -EINVAL)
+				return 3;
+			printf("parent: io_submit failed with %d: %s\n",
+			       ret, strerror(-ret));
 			return 1;
 		}
 
 		kill(p, SIGUSR1);
 
 		ret = io_pgetevents(ctx, 1, 1, &ev, NULL, &sigmask);
+		/* SKIP if the syscall has not been implemented. */
+		if (ret == -ENOSYS)
+			return 3;
 		if (ret < 0) {
-			printf("parent: io_pgetevents failed\n");
+			printf("parent: io_pgetevents failed: %s\n",
+			       strerror(-ret));
 			return 1;
 		}
 		if (ret != 1) {
@@ -147,3 +163,9 @@ int test_main(void)
 		return 0;
 	}
 }
+/*
+ * Local variables:
+ *  mode: c
+ *  c-basic-offset: 8
+ * End:
+ */
