@@ -1,3 +1,9 @@
+libaio (0.3.113-8deepin1) unstable; urgency=medium
+
+  * Revert t64.
+
+ -- xiangzelong <xiangzelong@deepin.org>  Fri, 30 Aug 2024 14:14:00 +0800
+
 libaio (0.3.113-8) unstable; urgency=medium
 
   * Add a backwards compatibility symlink for the libaio.so.1 SONAME in the
