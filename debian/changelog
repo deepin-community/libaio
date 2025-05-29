@@ -1,3 +1,9 @@
+libaio (0.3.113-8deepin2) unstable; urgency=medium
+
+  * feat: add sw64 support.
+
+ -- hudeng <hudeng@deepin.org>  Thu, 29 May 2025 17:30:29 +0800
+
 libaio (0.3.113-8deepin1) unstable; urgency=medium
 
   * Revert t64.
