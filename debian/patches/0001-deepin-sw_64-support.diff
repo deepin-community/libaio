@@ -1,0 +1,42 @@
+diff --git a/harness/cases/16.t b/harness/cases/16.t
+index 4d24b04..c0d3eb0 100644
+--- a/harness/cases/16.t
++++ b/harness/cases/16.t
+@@ -16,7 +16,7 @@
+ #define SYS_eventfd 307
+ #elif defined(__s390__)
+ #define SYS_eventfd 318
+-#elif defined(__alpha__)
++#elif defined(__alpha__) || defined(__sw_64__)
+ #define SYS_eventfd 478
+ #elif defined(__aarch64__) || defined(__loongarch__) || defined(__riscv)
+ /* these recent architectures do not implement eventfd, only eventfd2 */
+@@ -101,4 +101,3 @@ int test_main(void)
+ 
+ 	return 0;
+ }
+-
+diff --git a/src/syscall-sw64.h b/src/syscall-sw64.h
+new file mode 100644
+index 0000000..0aa4d3d
+--- /dev/null
++++ b/src/syscall-sw64.h
+@@ -0,0 +1,5 @@
++#define __NR_io_setup		398
++#define __NR_io_destroy		399
++#define __NR_io_getevents	400
++#define __NR_io_submit		401
++#define __NR_io_cancel		402
+diff --git a/src/syscall.h b/src/syscall.h
+index d2a117b..7d91896 100644
+--- a/src/syscall.h
++++ b/src/syscall.h
+@@ -23,6 +23,8 @@
+ #include "syscall-s390.h"
+ #elif defined(__alpha__)
+ #include "syscall-alpha.h"
++#elif defined(__sw_64__)
++#include "syscall-sw64.h"
+ #elif defined(__arm__)
+ #include "syscall-arm.h"
+ #elif defined(__sparc__)
